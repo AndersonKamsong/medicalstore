@@ -15,9 +15,9 @@ class Migration(migrations.Migration):
             name='SiteSettings',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('site_name', models.CharField(default='GreenMed Store', max_length=100, verbose_name='Site Name')),
+                ('site_name', models.CharField(default='Green Houses CBD', max_length=100, verbose_name='Site Name')),
                 ('tagline', models.CharField(default='Premium Natural Medical Products', max_length=200, verbose_name='Tagline')),
-                ('email', models.EmailField(default='info@greenmedstore.com', max_length=254, verbose_name='Email')),
+                ('email', models.EmailField(default='info@greenhousescbd.com', max_length=254, verbose_name='Email')),
                 ('phone', models.CharField(default='+33 1 23 45 67 89', max_length=20, verbose_name='Phone')),
                 ('address', models.TextField(default='Paris, France', verbose_name='Address')),
                 ('facebook_url', models.URLField(blank=True, verbose_name='Facebook URL')),

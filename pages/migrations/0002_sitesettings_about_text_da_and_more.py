@@ -233,57 +233,57 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='sitesettings',
             name='site_name_da',
-            field=models.CharField(default='GreenMed Store', max_length=100, null=True, verbose_name='Site Name'),
+            field=models.CharField(default='Green Houses CBD', max_length=100, null=True, verbose_name='Site Name'),
         ),
         migrations.AddField(
             model_name='sitesettings',
             name='site_name_de',
-            field=models.CharField(default='GreenMed Store', max_length=100, null=True, verbose_name='Site Name'),
+            field=models.CharField(default='Green Houses CBD', max_length=100, null=True, verbose_name='Site Name'),
         ),
         migrations.AddField(
             model_name='sitesettings',
             name='site_name_en',
-            field=models.CharField(default='GreenMed Store', max_length=100, null=True, verbose_name='Site Name'),
+            field=models.CharField(default='Green Houses CBD', max_length=100, null=True, verbose_name='Site Name'),
         ),
         migrations.AddField(
             model_name='sitesettings',
             name='site_name_es',
-            field=models.CharField(default='GreenMed Store', max_length=100, null=True, verbose_name='Site Name'),
+            field=models.CharField(default='Green Houses CBD', max_length=100, null=True, verbose_name='Site Name'),
         ),
         migrations.AddField(
             model_name='sitesettings',
             name='site_name_fi',
-            field=models.CharField(default='GreenMed Store', max_length=100, null=True, verbose_name='Site Name'),
+            field=models.CharField(default='Green Houses CBD', max_length=100, null=True, verbose_name='Site Name'),
         ),
         migrations.AddField(
             model_name='sitesettings',
             name='site_name_fr',
-            field=models.CharField(default='GreenMed Store', max_length=100, null=True, verbose_name='Site Name'),
+            field=models.CharField(default='Green Houses CBD', max_length=100, null=True, verbose_name='Site Name'),
         ),
         migrations.AddField(
             model_name='sitesettings',
             name='site_name_ga',
-            field=models.CharField(default='GreenMed Store', max_length=100, null=True, verbose_name='Site Name'),
+            field=models.CharField(default='Green Houses CBD', max_length=100, null=True, verbose_name='Site Name'),
         ),
         migrations.AddField(
             model_name='sitesettings',
             name='site_name_hu',
-            field=models.CharField(default='GreenMed Store', max_length=100, null=True, verbose_name='Site Name'),
+            field=models.CharField(default='Green Houses CBD', max_length=100, null=True, verbose_name='Site Name'),
         ),
         migrations.AddField(
             model_name='sitesettings',
             name='site_name_it',
-            field=models.CharField(default='GreenMed Store', max_length=100, null=True, verbose_name='Site Name'),
+            field=models.CharField(default='Green Houses CBD', max_length=100, null=True, verbose_name='Site Name'),
         ),
         migrations.AddField(
             model_name='sitesettings',
             name='site_name_no',
-            field=models.CharField(default='GreenMed Store', max_length=100, null=True, verbose_name='Site Name'),
+            field=models.CharField(default='Green Houses CBD', max_length=100, null=True, verbose_name='Site Name'),
         ),
         migrations.AddField(
             model_name='sitesettings',
             name='site_name_sv',
-            field=models.CharField(default='GreenMed Store', max_length=100, null=True, verbose_name='Site Name'),
+            field=models.CharField(default='Green Houses CBD', max_length=100, null=True, verbose_name='Site Name'),
         ),
         migrations.AddField(
             model_name='sitesettings',

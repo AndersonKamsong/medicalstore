@@ -1108,7 +1108,7 @@ msgstr "Bien que nous nous efforcions de fournir des informations précises sur 
 msgid "Use License"
 msgstr "Licence d'Utilisation"
 
-msgid "Permission is granted to temporarily download one copy of the materials on GreenMed Store's website for personal, non-commercial transitory viewing only. This license prohibits:"
+msgid "Permission is granted to temporarily download one copy of the materials on Green Houses CBD's website for personal, non-commercial transitory viewing only. This license prohibits:"
 msgstr "L'autorisation est accordée de télécharger temporairement une copie du contenu pour un usage personnel et non commercial. Cette licence interdit :"
 
 msgid "modification or copying of cannabis-related educational materials"
@@ -1126,8 +1126,8 @@ msgstr "la suppression des mentions de copyright"
 msgid "Intellectual Property"
 msgstr "Propriété Intellectuelle"
 
-msgid "All cannabis strain names, product formulations, and educational content are protected by intellectual property laws. The 'GreenMed Store' name and logo are registered trademarks."
-msgstr "Les noms de variétés, formulations de produits et contenu éducatif sont protégés. La marque 'GreenMed Store' est déposée."
+msgid "All cannabis strain names, product formulations, and educational content are protected by intellectual property laws. The 'Green Houses CBD' name and logo are registered trademarks."
+msgstr "Les noms de variétés, formulations de produits et contenu éducatif sont protégés. La marque 'Green Houses CBD' est déposée."
 
 msgid "Our proprietary cannabis cultivation techniques, extraction methods, and product formulations are trade secrets protected under French and EU law."
 msgstr "Nos techniques de culture, méthodes d'extraction et formulations sont des secrets commerciaux protégés."
@@ -1135,8 +1135,8 @@ msgstr "Nos techniques de culture, méthodes d'extraction et formulations sont d
 msgid "Limitation of Liability"
 msgstr "Limitation de Responsabilité"
 
-msgid "GreenMed Store shall not be liable for any damages arising from use of our cannabis products or website content. We expressly disclaim responsibility for any adverse effects, interactions with medications, or consequences of improper product use."
-msgstr "GreenMed Store décline toute responsabilité concernant l'usage de nos produits ou du contenu du site. Nous n'assumons aucune responsabilité pour d'éventuels effets indésirables, interactions médicamenteuses ou mauvais usage."
+msgid "Green Houses CBD shall not be liable for any damages arising from use of our cannabis products or website content. We expressly disclaim responsibility for any adverse effects, interactions with medications, or consequences of improper product use."
+msgstr "Green Houses CBD décline toute responsabilité concernant l'usage de nos produits ou du contenu du site. Nous n'assumons aucune responsabilité pour d'éventuels effets indésirables, interactions médicamenteuses ou mauvais usage."
 
 msgid "As cannabis laws vary by jurisdiction, we cannot guarantee the legal status of our products in your location. It is your responsibility to comply with local regulations."
 msgstr "Les lois sur le cannabis variant selon les juridictions, nous ne pouvons garantir le statut légal de nos produits dans votre région. Il est de votre responsabilité de vous conformer à la réglementation locale."
@@ -1165,8 +1165,8 @@ msgstr "Ces mentions légales ont été mises à jour le 1er janvier 2024 confor
 msgid "Introduction"
 msgstr "Introduction"
 
-msgid "At GreenMed Store, we prioritize your privacy and the security of your personal information, especially when purchasing cannabis-related products. This Privacy Policy explains how we collect, use, and protect your data when you visit our website or purchase our CBD and cannabis products."
-msgstr "Chez GreenMed Store, nous protégeons votre vie privée et la sécurité de vos données personnelles, particulièrement pour les achats de produits cannabis. Cette Politique explique comment nous collectons, utilisons et protégeons vos données lors de l'utilisation de notre site ou l'achat de nos produits CBD et cannabis."
+msgid "At Green Houses CBD, we prioritize your privacy and the security of your personal information, especially when purchasing cannabis-related products. This Privacy Policy explains how we collect, use, and protect your data when you visit our website or purchase our CBD and cannabis products."
+msgstr "Chez Green Houses CBD, nous protégeons votre vie privée et la sécurité de vos données personnelles, particulièrement pour les achats de produits cannabis. Cette Politique explique comment nous collectons, utilisons et protégeons vos données lors de l'utilisation de notre site ou l'achat de nos produits CBD et cannabis."
 
 msgid "This policy complies with GDPR, French data protection laws (Loi Informatique et Libertés), and cannabis industry regulations."
 msgstr "Cette politique est conforme au RGPD, à la loi Informatique et Libertés, et à la réglementation sur le cannabis."
@@ -1393,11 +1393,11 @@ msgstr "Questions Fréquentes"
 msgid "General Questions"
 msgstr "Questions Générales"
 
-msgid "What is GreenMed Store?"
-msgstr "Qu'est-ce que GreenMed Store ?"
+msgid "What is Green Houses CBD?"
+msgstr "Qu'est-ce que Green Houses CBD ?"
 
-msgid "GreenMed Store is a premium cannabis and CBD marketplace offering lab-tested products with detailed information about cannabinoid content, terpene profiles, cultivation methods, and potential wellness benefits. We focus on transparency and product quality."
-msgstr "GreenMed Store est une plateforme premium de cannabis et CBD proposant des produits testés en laboratoire avec des informations détaillées sur leur teneur en cannabinoïdes, profils terpéniques, méthodes de culture et bienfaits potentiels. Nous privilégions la transparence et la qualité."
+msgid "Green Houses CBD is a premium cannabis and CBD marketplace offering lab-tested products with detailed information about cannabinoid content, terpene profiles, cultivation methods, and potential wellness benefits. We focus on transparency and product quality."
+msgstr "Green Houses CBD est une plateforme premium de cannabis et CBD proposant des produits testés en laboratoire avec des informations détaillées sur leur teneur en cannabinoïdes, profils terpéniques, méthodes de culture et bienfaits potentiels. Nous privilégions la transparence et la qualité."
 
 msgid "Who can purchase cannabis products?"
 msgstr "Qui peut acheter des produits cannabis ?"
@@ -1609,8 +1609,8 @@ msgstr "Vous cherchez des réponses rapides sur le cannabis ?"
 msgid "Check our Cannabis FAQ"
 msgstr "Consultez notre FAQ Cannabis"
 
-msgid "About GreenMed Store"
-msgstr "À propos de GreenMed Store"
+msgid "About Green Houses CBD"
+msgstr "À propos de Green Houses CBD"
 
 msgid "Your trusted source for premium cannabis products with detailed information about cannabinoid profiles, terpenes, cultivation methods, and wellness benefits."
 msgstr "Votre source fiable de produits cannabis premium avec des informations détaillées sur les profils de cannabinoïdes, terpènes, méthodes de culture et bienfaits."
@@ -1618,8 +1618,8 @@ msgstr "Votre source fiable de produits cannabis premium avec des informations d
 msgid "Our Mission"
 msgstr "Notre Mission"
 
-msgid "At GreenMed Store, we're dedicated to providing access to high-quality cannabis products backed by scientific research and transparent information about their composition and effects."
-msgstr "Chez GreenMed Store, nous nous engageons à fournir des produits cannabis de qualité soutenus par la recherche scientifique et des informations transparentes sur leur composition et effets."
+msgid "At Green Houses CBD, we're dedicated to providing access to high-quality cannabis products backed by scientific research and transparent information about their composition and effects."
+msgstr "Chez Green Houses CBD, nous nous engageons à fournir des produits cannabis de qualité soutenus par la recherche scientifique et des informations transparentes sur leur composition et effets."
 
 msgid "We believe educated consumers make better wellness choices. That's why every product includes detailed cannabinoid profiles, terpene information, lab test results, and guidance on responsible consumption."
 msgstr "Nous croyons que des consommateurs informés font de meilleurs choix. C'est pourquoi chaque produit inclut des profils de cannabinoïdes, informations sur les terpènes, résultats de tests labo et conseils pour une consommation responsable."
@@ -1651,8 +1651,8 @@ msgstr "Éducation :"
 msgid "Resources to help consumers understand cannabis science and responsible use."
 msgstr "Ressources pour aider les consommateurs à comprendre la science du cannabis et son usage responsable."
 
-msgid "Why Choose GreenMed Store"
-msgstr "Pourquoi Choisir GreenMed Store"
+msgid "Why Choose Green Houses CBD"
+msgstr "Pourquoi Choisir Green Houses CBD"
 
 msgid "Lab Testing"
 msgstr "Tests en Laboratoire"
@@ -1759,8 +1759,8 @@ msgstr "Produits contenant moins de 0,2% de THC. Ne pas utiliser pour diagnostiq
 msgid "License Number: FR-CBD-2024-001"
 msgstr "Numéro de licence : FR-CBD-2024-001"
 
-msgid "Welcome to GreenMed Store. These Terms of Service govern your use of our website and purchase of cannabis-derived products containing less than 0.2% THC in compliance with EU Regulation No. 1307/2013 and French law."
-msgstr "Bienvenue chez GreenMed Store. Ces Conditions Générales régissent votre utilisation de notre site et l'achat de produits dérivés du cannabis contenant moins de 0,2% de THC conformément au Règlement UE n°1307/2013 et à la loi française."
+msgid "Welcome to Green Houses CBD. These Terms of Service govern your use of our website and purchase of cannabis-derived products containing less than 0.2% THC in compliance with EU Regulation No. 1307/2013 and French law."
+msgstr "Bienvenue chez Green Houses CBD. Ces Conditions Générales régissent votre utilisation de notre site et l'achat de produits dérivés du cannabis contenant moins de 0,2% de THC conformément au Règlement UE n°1307/2013 et à la loi française."
 
 msgid "By accessing our site or purchasing products, you confirm you are at least 18 years old and agree to these Terms. Medical cannabis patients must provide valid authorization."
 msgstr "En accédant à notre site ou en achetant des produits, vous confirmez avoir au moins 18 ans et accepter ces Conditions. Les patients en cannabis médical doivent fournir une autorisation valide."
@@ -1831,8 +1831,8 @@ msgstr "Les produits défectueux seront remplacés sur preuve du défaut"
 msgid "All cannabis strain names, product formulations, and educational content are protected intellectual property. Unauthorized commercial use is prohibited."
 msgstr "Les noms de variétés, formulations de produits et contenus éducatifs sont protégés. L'usage commercial non autorisé est interdit."
 
-msgid "GreenMed Store shall not be liable for:"
-msgstr "GreenMed Store ne peut être tenu responsable :"
+msgid "Green Houses CBD shall not be liable for:"
+msgstr "Green Houses CBD ne peut être tenu responsable :"
 
 msgid "Misuse of cannabis products"
 msgstr "Du mauvais usage des produits cannabis"
@@ -1876,8 +1876,8 @@ msgstr "Date d'Effet :"
 msgid "January 1, 2024 | Last Updated: January 1, 2024"
 msgstr "1er janvier 2024 | Dernière mise à jour : 1er janvier 2024"
 
-msgid "At GreenMed Store, we take special care in shipping cannabis-derived products in compliance with EU and French regulations (THC < 0.2%). This policy outlines our shipping practices, restrictions, and delivery timelines."
-msgstr "Chez GreenMed Store, nous expédions les produits dérivés du cannabis avec un soin particulier, en conformité avec les réglementations UE et française (THC < 0,2%). Cette politique décrit nos pratiques d'expédition, restrictions et délais de livraison."
+msgid "At Green Houses CBD, we take special care in shipping cannabis-derived products in compliance with EU and French regulations (THC < 0.2%). This policy outlines our shipping practices, restrictions, and delivery timelines."
+msgstr "Chez Green Houses CBD, nous expédions les produits dérivés du cannabis avec un soin particulier, en conformité avec les réglementations UE et française (THC < 0,2%). Cette politique décrit nos pratiques d'expédition, restrictions et délais de livraison."
 
 msgid "Shipping Areas"
 msgstr "Zones d'Expédition"

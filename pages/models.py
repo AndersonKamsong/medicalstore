@@ -4,11 +4,11 @@ from django.utils.translation import gettext_lazy as _
 
 class SiteSettings(models.Model):
     """Site-wide settings that can be configured from admin"""
-    site_name = models.CharField(_('Site Name'), max_length=100, default='GreenMed Store')
+    site_name = models.CharField(_('Site Name'), max_length=100, default='Green Houses CBD')
     tagline = models.CharField(_('Tagline'), max_length=200, default='Premium Natural Medical Products')
     
     # Contact Information
-    email = models.EmailField(_('Email'), default='info@greenmedstore.com')
+    email = models.EmailField(_('Email'), default='info@greenhousescbd.com')
     phone = models.CharField(_('Phone'), max_length=20, default='+33 1 23 45 67 89')
     address = models.TextField(_('Address'), default='Paris, France')
     

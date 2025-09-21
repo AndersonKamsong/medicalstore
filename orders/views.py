@@ -9,9 +9,66 @@ from django.conf import settings
 from django.core.mail import EmailMessage
 from django.template.loader import render_to_string
 
+import smtplib
+import ssl
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from django.conf import settings
+from django.views.decorators.csrf import csrf_exempt
+
+import smtplib
+import ssl
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from django.views.decorators.csrf import csrf_exempt
+from django.conf import settings
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from django.template.loader import render_to_string
+from .models import Order, OrderItem
+from cart.cart import Cart
+from .forms import OrderCreateForm
+
+def send_email_directly(subject, body, recipient_email, is_html=False):
+    """Send email directly using SMTP_SSL (bypassing Django's email backend)"""
+    try:
+        sender_email = settings.SMTP_EMAIL
+        password = settings.SMTP_PASSWORD
+        host = settings.SMTP_HOST
+        port = settings.SMTP_PORT
+        
+        # Create message
+        message = MIMEMultipart("alternative")
+        message["Subject"] = subject
+        message["From"] = sender_email
+        message["To"] = recipient_email
+        
+        if is_html:
+            # For HTML emails
+            part = MIMEText(body, "html")
+        else:
+            # For plain text emails
+            part = MIMEText(body, "plain")
+        
+        message.attach(part)
+        
+        # Create secure SSL context
+        context = ssl.create_default_context()
+        
+        # Send email
+        with smtplib.SMTP_SSL("smtp.hostinger.com", 465, context=context) as server:
+            server.login(sender_email, password)
+            server.sendmail(sender_email, recipient_email, message.as_string())
+            print(f"✓ Email sent successfully to {recipient_email}!")
+            return True
+            
+    except Exception as e:
+        print(f"✗ Email sending error to {recipient_email}: {e}")
+        return False
+
 def send_admin_order_email(order, cleaned_data):
-    """Send order confirmation email to admin"""
-    admin_email = settings.ADMIN_EMAIL  # Add to settings.py
+    """Send order confirmation email to admin using direct SMTP"""
+    admin_email = settings.ADMIN_EMAIL
     
     subject = f'🛒 New Order #{order.id} - {order.total_amount}€'
     body = render_to_string('emails/admin_order_notification.html', {
@@ -20,16 +77,10 @@ def send_admin_order_email(order, cleaned_data):
         'payment_method': cleaned_data.get('payment_method', 'N/A')
     })
     
-    email = EmailMessage(
-        subject,
-        body,
-        settings.DEFAULT_FROM_EMAIL,
-        [admin_email],
-        cc=[settings.SALES_EMAIL] if hasattr(settings, 'SALES_EMAIL') else None
-    )
-    email.content_subtype = 'html'
-    email.send()
+    # Use direct SMTP instead of Django's EmailMessage
+    return send_email_directly(subject, body, admin_email, is_html=True)
 
+@csrf_exempt
 def order_create(request):
     """Create a new order and handle bank payment email if needed"""
     cart = Cart(request)
@@ -62,18 +113,16 @@ def order_create(request):
             # Send bank info email if payment method is bank
             payment_method = form.cleaned_data.get('payment_method')
             customer_email = form.cleaned_data.get('email')
-            print("payment_method")
-            print(payment_method)
-            print(form.cleaned_data)
+            
             if payment_method == 'bank_transfer' and customer_email:
-                subject = f'🌿 GreenMed Store - Instructions for Bank Transfer (Order #{order.id})'
+                subject = f'🌿 Green Houses CBD - Instructions for Bank Transfer (Order #{order.id})'
                 body = f"""
                     <html>
                     <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto;">
                         <div style="background-color: #f5f9f0; padding: 20px; border-radius: 8px; border-left: 4px solid #4CAF50;">
                         <h1 style="color: #2E7D32; margin-top: 0;">Thank You for Your Order #{order.id}</h1>
                         <p>Dear Valued Customer,</p>
-                        <p>We appreciate your trust in GreenMed Store. Please find below the details for your bank transfer payment:</p>
+                        <p>We appreciate your trust in Green Houses CBD. Please find below the details for your bank transfer payment:</p>
                         </div>
 
                         <div style="background-color: #f8f9fa; padding: 20px; margin: 20px 0; border-radius: 8px; border: 1px solid #e0e0e0;">
@@ -86,7 +135,7 @@ def order_create(request):
                             </tr>
                             <tr>
                             <td style="padding: 8px 0; font-weight: bold;">Account Name:</td>
-                            <td style="padding: 8px 0;">GreenMed Store</td>
+                            <td style="padding: 8px 0;">Green Houses CBD</td>
                             </tr>
                             <tr>
                             <td style="padding: 8px 0; font-weight: bold;">Account Number:</td>
@@ -133,18 +182,24 @@ def order_create(request):
 
                         <p style="color: #666; font-size: 0.9em; border-top: 1px solid #eee; padding-top: 15px;">
                         With green regards,<br>
-                        <strong>The GreenMed Store Team</strong><br>
+                        <strong>The Green Houses CBD Team</strong><br>
                         <span style="color: #4CAF50;">Nurturing Your Wellness Naturally</span>
                         </p>
                     </body>
                     </html>
                     """
-                email = EmailMessage(subject, body, settings.DEFAULT_FROM_EMAIL, [customer_email])
-                email.content_subtype = 'html'  # Set content type to HTML
-                email.send()
+                
+                # Use direct SMTP instead of Django's EmailMessage
+                email_sent = send_email_directly(subject, body, customer_email, is_html=True)
+                if email_sent:
+                    messages.info(request, f'Bank transfer instructions sent to {customer_email}')
+                else:
+                    messages.warning(request, 'Failed to send bank instructions email. Please contact support.')
 
             # 2. Send admin email notification
-            send_admin_order_email(order, form.cleaned_data)
+            admin_email_sent = send_admin_order_email(order, form.cleaned_data)
+            # if not admin_email_sent:
+                # messages.warning(request, 'Failed to send admin notification. Please check admin email settings.')
             
             return redirect('orders:order_created', order_id=order.id)
 

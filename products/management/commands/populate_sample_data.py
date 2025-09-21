@@ -27,7 +27,7 @@ class Command(BaseCommand):
         
         # English (default)
         activate('en')
-        settings.site_name = 'GreenMed Store'
+        settings.site_name = 'Green Houses CBD'
         settings.tagline = 'Premium Natural Medical Products'
         settings.address = 'Paris, France'
         settings.business_hours = 'Mon-Fri: 9:00-18:00\nSat: 10:00-16:00\nSun: Closed'
