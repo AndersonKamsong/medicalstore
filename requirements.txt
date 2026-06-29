@@ -3,10 +3,10 @@ Pillow==10.4.0
 asgiref==3.8.1
 sqlparse==0.5.1
 django-modeltranslation==0.18.11
+python-decouple==3.8
 
-# Production dependencies (uncomment for deployment)
-# gunicorn==21.2.0
-# psycopg2-binary==2.9.7
-# dj-database-url==2.1.0
-# whitenoise==6.5.0
-# django-environ==0.11.2
+# Production dependencies
+gunicorn==21.2.0
+psycopg2-binary==2.9.7
+dj-database-url==2.1.0
+whitenoise==6.5.0

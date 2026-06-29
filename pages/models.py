@@ -24,6 +24,13 @@ class SiteSettings(models.Model):
     # Legal
     privacy_policy = models.TextField(_('Privacy Policy'), blank=True)
     terms_of_service = models.TextField(_('Terms of Service'), blank=True)
+
+    # Bank Transfer Details (used in order confirmation emails)
+    bank_name = models.CharField(_('Bank Name'), max_length=100, blank=True, default='')
+    bank_account_name = models.CharField(_('Account Holder Name'), max_length=100, blank=True, default='')
+    bank_account_number = models.CharField(_('Account Number'), max_length=50, blank=True, default='')
+    bank_iban = models.CharField(_('IBAN'), max_length=50, blank=True, default='')
+    bank_swift_bic = models.CharField(_('SWIFT / BIC'), max_length=20, blank=True, default='')
     
     class Meta:
         verbose_name = _('Site Settings')

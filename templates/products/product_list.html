@@ -112,8 +112,18 @@
                         </div>
                     </div>
                     
+                    <!-- In Stock Only -->
+                    <div>
+                        <label class="flex items-center text-gray-700 cursor-pointer select-none">
+                            <input type="checkbox" name="in_stock" value="1"
+                                   {% if filters.in_stock %}checked{% endif %}
+                                   class="mr-2 text-cannabis-green">
+                            <span class="font-medium text-sm">{% trans "In Stock Only" %}</span>
+                        </label>
+                    </div>
+
                     <div class="flex space-x-2">
-                        <button type="submit" 
+                        <button type="submit"
                                 class="flex-1 bg-cannabis-green text-white py-2 rounded hover:bg-cannabis-dark transition duration-300">
                             <i class="fas fa-check mr-2"></i>{% trans "Apply" %}
                         </button>

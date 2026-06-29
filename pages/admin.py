@@ -19,6 +19,10 @@ class SiteSettingsAdmin(admin.ModelAdmin):
             'fields': ('privacy_policy', 'terms_of_service'),
             'classes': ('collapse',)
         }),
+        ('Bank Transfer Details', {
+            'fields': ('bank_name', 'bank_account_name', 'bank_account_number', 'bank_iban', 'bank_swift_bic'),
+            'description': 'These details are shown in order confirmation emails when the customer selects bank transfer.',
+        }),
     )
     
     def has_add_permission(self, request):

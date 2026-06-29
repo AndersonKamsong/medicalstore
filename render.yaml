@@ -2,19 +2,34 @@ services:
   - type: web
     name: medicalstore
     env: python
-    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput && python manage.py migrate && python manage.py populate_db
-    startCommand: python manage.py runserver 0.0.0.0:$PORT
+    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput && python manage.py migrate
+    startCommand: gunicorn medicalstore.wsgi:application --bind 0.0.0.0:$PORT
     envVars:
       - key: DEBUG
         value: False
       - key: SECRET_KEY
         generateValue: true
       - key: ALLOWED_HOSTS
-        value: "*"
+        value: ".onrender.com,greenhousescbd.com"
+      - key: CSRF_TRUSTED_ORIGINS
+        value: "https://greenhousescbd.com"
       - key: DATABASE_URL
         fromDatabase:
           name: medicalstore-db
           property: connectionString
+      - key: SMTP_EMAIL
+        value: "info@greenhousescbd.com"
+      - key: SMTP_HOST
+        value: "smtp.hostinger.com"
+      - key: SMTP_PORT
+        value: "465"
+      - key: ADMIN_EMAIL
+        value: "gastonanderson039@gmail.com"
+      - key: DEFAULT_FROM_EMAIL
+        value: "info@greenhousescbd.com"
+      # SMTP_PASSWORD — set this in the Render dashboard (do not commit the real value)
+      - key: SMTP_PASSWORD
+        sync: false
 
 databases:
   - name: medicalstore-db

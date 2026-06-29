@@ -1,0 +1,153 @@
+{% load i18n %}
+<!DOCTYPE html>
+<html lang="en">
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 620px; margin: 0 auto; padding: 20px;">
+
+  <!-- Header -->
+  <div style="background-color: #f5f9f0; padding: 24px; border-radius: 8px; border-left: 4px solid #4CAF50; margin-bottom: 20px;">
+    <h1 style="color: #2E7D32; margin: 0 0 8px 0;">Order Confirmed — #{{ order.id }}</h1>
+    <p style="margin: 0;">Dear {{ order.first_name }},</p>
+    <p style="margin: 8px 0 0 0;">
+      Thank you for your order at <strong>{{ site_settings.site_name }}</strong>.
+      We have received it and will begin processing shortly.
+    </p>
+  </div>
+
+  <!-- Order Summary -->
+  <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; border: 1px solid #e0e0e0; margin-bottom: 20px;">
+    <h2 style="color: #2E7D32; margin-top: 0;">Order Summary</h2>
+    <table style="width: 100%; border-collapse: collapse;">
+      <tr>
+        <td style="padding: 6px 0; font-weight: bold; width: 150px;">Order Number:</td>
+        <td>#{{ order.id }}</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 0; font-weight: bold;">Name:</td>
+        <td>{{ order.first_name }} {{ order.last_name }}</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 0; font-weight: bold;">Delivery Address:</td>
+        <td>{{ order.address }}, {{ order.postal_code }} {{ order.city }}, {{ order.country }}</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 0; font-weight: bold;">Payment Method:</td>
+        <td>{{ payment_method|title }}</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 0; font-weight: bold;">Order Total:</td>
+        <td style="font-weight: bold; color: #2E7D32;">€{{ order.total_amount }}</td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- Items Ordered -->
+  {% with items=order.items.all %}
+  {% if items %}
+  <div style="background-color: #fff; padding: 20px; border-radius: 8px; border: 1px solid #e0e0e0; margin-bottom: 20px;">
+    <h2 style="color: #2E7D32; margin-top: 0;">Items Ordered</h2>
+    <table style="width: 100%; border-collapse: collapse;">
+      <thead>
+        <tr style="border-bottom: 2px solid #e0e0e0;">
+          <th style="padding: 8px 4px; text-align: left;">Product</th>
+          <th style="padding: 8px 4px; text-align: center;">Qty</th>
+          <th style="padding: 8px 4px; text-align: right;">Subtotal</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in items %}
+        <tr style="border-bottom: 1px solid #f0f0f0;">
+          <td style="padding: 8px 4px;">{{ item.product.name }}</td>
+          <td style="padding: 8px 4px; text-align: center;">{{ item.quantity }}</td>
+          <td style="padding: 8px 4px; text-align: right;">€{{ item.get_cost }}</td>
+        </tr>
+        {% endfor %}
+        <tr>
+          <td colspan="2" style="padding: 10px 4px; font-weight: bold; text-align: right;">Total:</td>
+          <td style="padding: 10px 4px; font-weight: bold; text-align: right; color: #2E7D32;">€{{ order.total_amount }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+  {% endwith %}
+
+  <!-- Bank Transfer Instructions (only for bank_transfer) -->
+  {% if payment_method == 'bank_transfer' %}
+  <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; border: 1px solid #e0e0e0; margin-bottom: 20px;">
+    <h2 style="color: #2E7D32; margin-top: 0;">Bank Transfer Instructions</h2>
+    <p>Please complete your bank transfer using the details below.</p>
+    <table style="width: 100%; border-collapse: collapse;">
+      {% if site_settings.bank_name %}
+      <tr>
+        <td style="padding: 6px 0; font-weight: bold; width: 160px;">Bank Name:</td>
+        <td>{{ site_settings.bank_name }}</td>
+      </tr>
+      {% endif %}
+      {% if site_settings.bank_account_name %}
+      <tr>
+        <td style="padding: 6px 0; font-weight: bold;">Account Name:</td>
+        <td>{{ site_settings.bank_account_name }}</td>
+      </tr>
+      {% endif %}
+      {% if site_settings.bank_account_number %}
+      <tr>
+        <td style="padding: 6px 0; font-weight: bold;">Account Number:</td>
+        <td>{{ site_settings.bank_account_number }}</td>
+      </tr>
+      {% endif %}
+      {% if site_settings.bank_iban %}
+      <tr>
+        <td style="padding: 6px 0; font-weight: bold;">IBAN:</td>
+        <td>{{ site_settings.bank_iban }}</td>
+      </tr>
+      {% endif %}
+      {% if site_settings.bank_swift_bic %}
+      <tr>
+        <td style="padding: 6px 0; font-weight: bold;">SWIFT / BIC:</td>
+        <td>{{ site_settings.bank_swift_bic }}</td>
+      </tr>
+      {% endif %}
+      <tr>
+        <td style="padding: 6px 0; font-weight: bold;">Amount Due:</td>
+        <td style="font-weight: bold; color: #2E7D32;">€{{ order.total_amount }}</td>
+      </tr>
+    </table>
+    <p style="background-color: #fff8e1; padding: 12px; border-left: 4px solid #ffc107; margin: 15px 0 0 0;">
+      <strong>Important:</strong> Include <strong>Order #{{ order.id }}</strong> as your payment reference so we can match your transfer quickly.
+    </p>
+  </div>
+  {% endif %}
+
+  <!-- Next Steps -->
+  <div style="margin-bottom: 20px;">
+    <h3 style="color: #2E7D32;">What happens next?</h3>
+    <ol style="padding-left: 20px; margin: 0;">
+      {% if payment_method == 'bank_transfer' %}
+      <li style="margin-bottom: 6px;">Complete your bank transfer using the details above.</li>
+      <li style="margin-bottom: 6px;">We will confirm once payment is received (1-2 business days).</li>
+      {% else %}
+      <li style="margin-bottom: 6px;">Our team will review and confirm your order.</li>
+      {% endif %}
+      <li style="margin-bottom: 6px;">Your order will be prepared and dispatched.</li>
+      <li>You will receive a shipping notification when it's on its way.</li>
+    </ol>
+  </div>
+
+  <!-- Contact -->
+  <div style="background-color: #e8f5e9; padding: 16px; border-radius: 8px; text-align: center; margin-bottom: 20px;">
+    <p style="margin: 0 0 6px 0;">Questions about your order?</p>
+    <p style="margin: 0;">
+      <a href="mailto:{{ site_settings.email }}" style="color: #2E7D32; font-weight: bold;">{{ site_settings.email }}</a>
+      {% if site_settings.phone %} &nbsp;·&nbsp; {{ site_settings.phone }}{% endif %}
+    </p>
+  </div>
+
+  <!-- Footer -->
+  <p style="color: #888; font-size: 0.88em; border-top: 1px solid #eee; padding-top: 14px; margin: 0;">
+    With warm regards,<br>
+    <strong>{{ site_settings.site_name }}</strong>
+    {% if site_settings.tagline %}<br><em>{{ site_settings.tagline }}</em>{% endif %}
+  </p>
+
+</body>
+</html>

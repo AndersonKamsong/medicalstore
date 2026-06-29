@@ -27,7 +27,8 @@ def product_list(request):
         'ratio': request.GET.get('ratio'),
         'min_price': request.GET.get('min_price'),
         'max_price': request.GET.get('max_price'),
-        'method': request.GET.getlist('method')
+        'method': request.GET.getlist('method'),
+        'in_stock': request.GET.get('in_stock'),
     }
     
     # Apply filters
@@ -48,7 +49,10 @@ def product_list(request):
     
     if filters['method']:
         products = products.filter(recommended_methods__overlap=filters['method'])
-    
+
+    if filters['in_stock']:
+        products = products.filter(stock_quantity__gt=0)
+
     # Pagination
     paginator = Paginator(products, 12)
     page_number = request.GET.get('page')
