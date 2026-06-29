@@ -18,17 +18,24 @@ services:
           name: medicalstore-db
           property: connectionString
       - key: SMTP_EMAIL
-        value: "info@greenhousescbd.com"
+        value: "kamsonganderson39@gmail.com"
       - key: SMTP_HOST
         value: "smtp.hostinger.com"
       - key: SMTP_PORT
         value: "465"
       - key: ADMIN_EMAIL
-        value: "gastonanderson039@gmail.com"
+        value: "kamsonganderson39@gmail.com"
       - key: DEFAULT_FROM_EMAIL
-        value: "info@greenhousescbd.com"
+        value: "kamsonganderson39@gmail.com"
       # SMTP_PASSWORD — set this in the Render dashboard (do not commit the real value)
       - key: SMTP_PASSWORD
+        sync: false
+      # Cloudinary — set these in the Render dashboard (do not commit real values)
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
         sync: false
 
 databases:

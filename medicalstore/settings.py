@@ -22,7 +22,9 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+    'cloudinary_storage',
     'django.contrib.staticfiles',
+    'cloudinary',
     'products',
     'cart',
     'pages',
@@ -82,8 +84,8 @@ SMTP_PORT = config('SMTP_PORT', default=465, cast=int)
 # ─── Database ──────────────────────────────────────────────────────────────────
 # Reads DATABASE_URL from environment; falls back to SQLite for local development.
 DATABASES = {
-    'default': dj_database_url.config(
-        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
+    'default': dj_database_url.parse(
+        config('DATABASE_URL', default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}"),
         conn_max_age=600,
     )
 }
@@ -126,6 +128,20 @@ STATICFILES_STORAGE = (
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+# ─── Cloudinary (image storage) ────────────────────────────────────────────────
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': config('CLOUDINARY_CLOUD_NAME', default=''),
+    'API_KEY': config('CLOUDINARY_API_KEY', default=''),
+    'API_SECRET': config('CLOUDINARY_API_SECRET', default=''),
+}
+
+if all([
+    config('CLOUDINARY_CLOUD_NAME', default=''),
+    config('CLOUDINARY_API_KEY', default=''),
+    config('CLOUDINARY_API_SECRET', default=''),
+]):
+    DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 

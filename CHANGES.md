@@ -370,3 +370,154 @@ python manage.py runserver
 1. Push this branch to your remote repository.
 2. In the Render dashboard → your service → **Environment**, add `SMTP_PASSWORD` manually (it is marked `sync: false` and will not be set from `render.yaml`).
 3. Render will automatically run `collectstatic` + `migrate` + start `gunicorn` on deploy.
+
+---
+
+## Phase 5 — Local PostgreSQL Setup & Cloudinary Image Storage
+
+**Date:** 2026-06-29
+
+### Files Changed
+
+| File | Action |
+|------|--------|
+| `requirements.txt` | Added `cloudinary`, `django-cloudinary-storage` |
+| `medicalstore/settings.py` | Added Cloudinary apps + config block |
+| `.env.example` | Updated DATABASE_URL comment; added Cloudinary keys |
+| `render.yaml` | Added three Cloudinary env vars (`sync: false`) |
+| `CHANGES.md` | This document |
+
+---
+
+### Part 1 — Local PostgreSQL Setup
+
+#### Database configuration (already correct — confirmed working)
+
+`settings.py` already uses `dj_database_url.config()` with a SQLite fallback:
+
+```python
+DATABASES = {
+    'default': dj_database_url.config(
+        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
+        conn_max_age=600,
+    )
+}
+```
+
+- **No `DATABASE_URL` in `.env`** → SQLite is used automatically (zero config for local dev).
+- **`DATABASE_URL` set** → PostgreSQL (or any other DB) is used instead.
+
+#### Setting up a local PostgreSQL database (optional)
+
+If you want to develop against PostgreSQL locally (to match production):
+
+```bash
+# 1. Install PostgreSQL (Ubuntu/Debian)
+sudo apt install postgresql postgresql-contrib
+
+# 2. Create the database and user
+sudo -u postgres psql <<'SQL'
+CREATE DATABASE medicalstore_dev;
+CREATE USER medicalstore_user WITH PASSWORD 'yourpassword';
+GRANT ALL PRIVILEGES ON DATABASE medicalstore_dev TO medicalstore_user;
+SQL
+
+# 3. Set DATABASE_URL in your .env
+# DATABASE_URL=postgresql://medicalstore_user:yourpassword@localhost:5432/medicalstore_dev
+
+# 4. Run migrations against the new database
+python manage.py migrate
+```
+
+To go back to SQLite, comment out or remove `DATABASE_URL` from `.env`.
+
+---
+
+### Part 2 — Cloudinary for Image Storage
+
+#### How the conditional logic works
+
+Cloudinary is **opt-in**: the app checks whether all three keys are non-empty at startup. This means:
+
+| Environment | Keys set? | Storage used |
+|-------------|-----------|--------------|
+| Local dev (default) | No | Django's default local filesystem (`MEDIA_ROOT`) |
+| Local dev (with Cloudinary) | Yes | Cloudinary |
+| Render (production) | Yes (from dashboard) | Cloudinary |
+
+The check in `settings.py`:
+
+```python
+if all([
+    config('CLOUDINARY_CLOUD_NAME', default=''),
+    config('CLOUDINARY_API_KEY', default=''),
+    config('CLOUDINARY_API_SECRET', default=''),
+]):
+    DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+```
+
+If any key is missing or blank, `DEFAULT_FILE_STORAGE` is never set and Django falls back to its built-in local filesystem storage. No code change is needed in models — existing `ImageField` definitions work transparently with either backend.
+
+#### INSTALLED_APPS order (required by django-cloudinary-storage)
+
+```python
+INSTALLED_APPS = [
+    ...
+    'cloudinary_storage',        # ← must be BEFORE django.contrib.staticfiles
+    'django.contrib.staticfiles',
+    'cloudinary',                # ← after django.contrib.staticfiles
+    ...
+]
+```
+
+#### Local development without Cloudinary
+
+Just leave the three keys out of `.env` (or blank). Product images are stored in `media/products/` as before. No Cloudinary account needed.
+
+#### Local development with Cloudinary
+
+Add your keys to `.env`:
+
+```env
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
+```
+
+Uploaded images will go to Cloudinary automatically.
+
+---
+
+### Render Deployment Checklist
+
+Set the following in the Render dashboard → your service → **Environment** (all marked `sync: false` — never committed):
+
+| Variable | Where to get it |
+|----------|----------------|
+| `SMTP_PASSWORD` | Your email provider |
+| `CLOUDINARY_CLOUD_NAME` | cloudinary.com → Dashboard |
+| `CLOUDINARY_API_KEY` | cloudinary.com → Dashboard |
+| `CLOUDINARY_API_SECRET` | cloudinary.com → Dashboard |
+
+All other variables are declared in `render.yaml` and set automatically.
+
+---
+
+### Complete Environment Variable Reference
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `SECRET_KEY` | **Yes** | — | Django secret key (50+ random chars) |
+| `DEBUG` | No | `False` | Set to `True` for local dev only |
+| `ALLOWED_HOSTS` | **Yes** | `localhost,127.0.0.1` | Comma-separated list of allowed hostnames |
+| `CSRF_TRUSTED_ORIGINS` | No | `''` | Comma-separated trusted origins (include production URL) |
+| `DATABASE_URL` | No | SQLite fallback | PostgreSQL connection string; omit for SQLite |
+| `SMTP_EMAIL` | No | `''` | SMTP sender address |
+| `SMTP_PASSWORD` | No | `''` | SMTP password (**never commit**) |
+| `SMTP_HOST` | No | `smtp.hostinger.com` | SMTP server hostname |
+| `SMTP_PORT` | No | `465` | SMTP port |
+| `ADMIN_EMAIL` | No | `admin@example.com` | Receives order notification emails |
+| `DEFAULT_FROM_EMAIL` | No | `info@example.com` | Email From: header |
+| `CLOUDINARY_CLOUD_NAME` | No | `''` | Cloudinary cloud name; leave blank for local file storage |
+| `CLOUDINARY_API_KEY` | No | `''` | Cloudinary API key |
+| `CLOUDINARY_API_SECRET` | No | `''` | Cloudinary API secret (**never commit**) |
