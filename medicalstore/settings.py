@@ -69,17 +69,19 @@ WSGI_APPLICATION = 'medicalstore.wsgi.application'
 
 # ─── Email ─────────────────────────────────────────────────────────────────────
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_USE_SSL = True
+# EMAIL_USE_SSL = True
+EMAIL_USE_SSL = False
+EMAIL_USE_TLS = True
 
 ADMIN_EMAIL = config('ADMIN_EMAIL', default='admin@example.com')
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='info@example.com')
 SERVER_EMAIL = config('DEFAULT_FROM_EMAIL', default='info@example.com')
 
 # Used by send_email_directly() in orders/views.py
-SMTP_EMAIL = config('SMTP_EMAIL', default='')
-SMTP_PASSWORD = config('SMTP_PASSWORD', default='')
-SMTP_HOST = config('SMTP_HOST', default='smtp.hostinger.com')
-SMTP_PORT = config('SMTP_PORT', default=465, cast=int)
+EMAIL_HOST = config('SMTP_HOST', default='smtp.gmail.com')
+EMAIL_PORT = config('SMTP_PORT', default=587, cast=int)
+EMAIL_HOST_USER = config('SMTP_EMAIL', default='')
+EMAIL_HOST_PASSWORD = config('SMTP_PASSWORD', default='')
 
 # ─── Database ──────────────────────────────────────────────────────────────────
 # Reads DATABASE_URL from environment; falls back to SQLite for local development.

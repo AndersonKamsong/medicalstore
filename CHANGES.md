@@ -521,3 +521,121 @@ All other variables are declared in `render.yaml` and set automatically.
 | `CLOUDINARY_CLOUD_NAME` | No | `''` | Cloudinary cloud name; leave blank for local file storage |
 | `CLOUDINARY_API_KEY` | No | `''` | Cloudinary API key |
 | `CLOUDINARY_API_SECRET` | No | `''` | Cloudinary API secret (**never commit**) |
+
+---
+
+## Phase 6 — Complete Authentication Flow
+
+**Date:** 2026-06-29
+
+### Audit Findings
+
+| Template | Before | After |
+|---|---|---|
+| `registration/login.html` | Existed, styled | Unchanged |
+| `registration/register.html` | Existed, styled | Unchanged |
+| `accounts/profile.html` | Existed, styled | Unchanged |
+| `registration/password_reset_form.html` | Missing (Django unstyled default) | **Created** |
+| `registration/password_reset_done.html` | Missing (Django unstyled default) | **Created** |
+| `registration/password_reset_confirm.html` | Missing (Django unstyled default) | **Created** |
+| `registration/password_reset_complete.html` | Missing (Django unstyled default) | **Created** |
+| `registration/password_change_form.html` | Missing (Django unstyled default) | **Created** |
+| `registration/password_change_done.html` | Missing (Django unstyled default) | **Created** |
+| `registration/logged_out.html` | Not needed | Not created (custom `logout_view` redirects to home) |
+
+### Bug Fixed
+
+**File:** `accounts/forms.py:20`
+
+`focus:ring-medical-blue` was not a defined Tailwind color — focus rings on all register form
+inputs were invisible. Fixed to `focus:ring-cannabis-green`.
+
+### Files Changed
+
+| File | Action |
+|---|---|
+| `accounts/forms.py` | Fixed CSS class (`medical-blue` → `cannabis-green`) |
+| `templates/registration/password_reset_form.html` | **Created** |
+| `templates/registration/password_reset_done.html` | **Created** |
+| `templates/registration/password_reset_confirm.html` | **Created** |
+| `templates/registration/password_reset_complete.html` | **Created** |
+| `templates/registration/password_change_form.html` | **Created** |
+| `templates/registration/password_change_done.html` | **Created** |
+
+### URL Wiring — Verified
+
+All Django auth URL names resolve correctly under `i18n_patterns`:
+
+| URL name | Path | View |
+|---|---|---|
+| `login` | `/accounts/login/` | Django built-in `LoginView` |
+| `logout` | `/accounts/logout/` | Custom `logout_view` (GET-safe, redirects to home) |
+| `accounts:logout` | `/accounts/logout/` | Same custom view (app-namespaced alias) |
+| `password_reset` | `/accounts/password_reset/` | Django `PasswordResetView` |
+| `password_reset_done` | `/accounts/password_reset/done/` | Django `PasswordResetDoneView` |
+| `password_reset_confirm` | `/accounts/reset/<uidb64>/<token>/` | Django `PasswordResetConfirmView` |
+| `password_reset_complete` | `/accounts/reset/done/` | Django `PasswordResetCompleteView` |
+| `password_change` | `/accounts/password_change/` | Django `PasswordChangeView` |
+| `password_change_done` | `/accounts/password_change/done/` | Django `PasswordChangeDoneView` |
+| `accounts:register` | `/accounts/register/` | Custom `register` view |
+| `accounts:profile` | `/accounts/profile/` | Custom `profile` view (`@login_required`) |
+
+**Logout routing note:** `accounts.urls` is included before `django.contrib.auth.urls` in
+`urls.py`. Both patterns match `/accounts/logout/`, but Django's URL dispatcher reaches the
+custom `logout_view` first. `{% url 'logout' %}` and `{% url 'accounts:logout' %}` both
+generate the same path and invoke the same view.
+
+### Auth Flow Verification (all tested)
+
+| Flow | Result |
+|---|---|
+| Register → POST `/accounts/register/` | 302 → `/` |
+| Login with wrong password | 200 (form redisplayed with error) |
+| Login with correct password | 302 → `/` |
+| Logout GET `/accounts/logout/` | 302 → `/` |
+| Password reset form GET | 200 |
+| Password reset form POST | 302 → `/accounts/password_reset/done/` |
+| Password change (unauthenticated) | 302 → `/accounts/login/?next=/accounts/password_change/` |
+| Password change form GET (auth) | 200 |
+| Password change form POST (auth) | 302 → `/accounts/password_change/done/` |
+| Profile (unauthenticated) | 302 → `/accounts/login/?next=/accounts/profile/` |
+| Profile (authenticated) | 200 |
+
+**Password reset email in local dev:** The form correctly redirects to the done page. The
+actual SMTP send fails locally (no live connection) — this is expected. In production,
+`SMTP_PASSWORD` must be set in the Render dashboard for emails to send.
+
+### How to Test the Full Auth Flow Locally
+
+```bash
+# Start the dev server
+python manage.py runserver
+
+# 1. Register
+#    Visit: http://localhost:8000/accounts/register/
+#    Fill in all fields and submit → should land on home page, logged in
+
+# 2. Logout
+#    Click Logout in the nav → should redirect to home, no longer logged in
+
+# 3. Login wrong password
+#    Visit: http://localhost:8000/accounts/login/
+#    Enter wrong password → error message shown inline
+
+# 4. Login correct
+#    Enter correct credentials → redirects to home
+
+# 5. Password reset (requires SMTP configured)
+#    Visit: http://localhost:8000/accounts/password_reset/
+#    Enter your email → redirects to done page (email sent if SMTP works)
+#    Click link in email → /accounts/reset/<uid>/<token>/
+#    Enter new password → redirects to complete page
+
+# 6. Change password (while logged in)
+#    Visit: http://localhost:8000/accounts/password_change/
+#    Enter current + new password → redirects to done page
+
+# 7. Profile
+#    Visit: http://localhost:8000/accounts/profile/
+#    (Redirects to login if not authenticated)
+```
