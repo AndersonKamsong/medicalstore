@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background-color:#f4f4f4;font-family:Arial,Helvetica,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f4f4f4;padding:20px 0;">
+<tr><td align="center">
+<table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#ffffff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+
+  <!-- Header -->
+  <tr><td style="background-color:#2d5a27;padding:28px 32px;text-align:center;">
+    <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;">{{ site.site_name }}</h1>
+    <p style="margin:6px 0 0;color:#a8d5a2;font-size:14px;">Payment Details for Your Order</p>
+  </td></tr>
+
+  <!-- Greeting -->
+  <tr><td style="padding:28px 32px 0;">
+    <p style="margin:0 0 8px;font-size:16px;color:#333;">Dear <strong>{{ order.first_name }}</strong>,</p>
+    <p style="margin:0;font-size:15px;color:#555;line-height:1.6;">
+      Thank you for your order. Below are the payment details for
+      <strong>ORD-{{ order.id|stringformat:"05d" }}</strong> totalling <strong>€{{ order.total_amount }}</strong>.
+    </p>
+  </td></tr>
+
+  <!-- Payment details box -->
+  <tr><td style="padding:20px 32px 0;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="background:#f8fdf7;border:2px solid #2d5a27;border-radius:8px;">
+      <tr><td style="padding:20px 24px;">
+        <h3 style="margin:0 0 16px;font-size:15px;color:#2d5a27;border-bottom:1px solid #c8e6c9;padding-bottom:10px;">
+          💳 Payment Instructions — {{ order.payment_method|title }}
+        </h3>
+
+        {% with pm=payment_info %}
+
+        {% if pm.payment_method == 'bank_transfer' %}
+        <table width="100%" cellpadding="5" cellspacing="0" style="font-size:14px;">
+          <tr><td style="color:#777;width:160px;">Bank Name</td><td style="color:#333;font-weight:600;">{{ pm.bank_name }}</td></tr>
+          <tr><td style="color:#777;">Account Name</td><td style="color:#333;font-weight:600;">{{ pm.bank_account_name }}</td></tr>
+          <tr><td style="color:#777;">IBAN</td><td style="color:#333;font-weight:600;font-family:monospace;letter-spacing:1px;">{{ pm.bank_iban }}</td></tr>
+          <tr><td style="color:#777;">BIC / SWIFT</td><td style="color:#333;font-weight:600;">{{ pm.bank_swift_bic }}</td></tr>
+          <tr style="background:#e8f5e9;">
+            <td style="color:#2d5a27;font-weight:700;padding:8px 5px;">Reference</td>
+            <td style="color:#2d5a27;font-weight:700;font-size:15px;padding:8px 5px;">ORD-{{ order.id|stringformat:"05d" }}</td>
+          </tr>
+          <tr><td style="color:#777;">Amount</td><td style="color:#333;font-weight:600;">€{{ order.total_amount }}</td></tr>
+        </table>
+        <p style="margin:14px 0 0;font-size:13px;color:#e65100;line-height:1.5;">
+          ⚠️ Please include the reference number <strong>ORD-{{ order.id|stringformat:"05d" }}</strong>
+          in your bank transfer so we can identify your payment.
+        </p>
+
+        {% elif pm.payment_method == 'crypto' %}
+        <table width="100%" cellpadding="5" cellspacing="0" style="font-size:14px;">
+          <tr><td style="color:#777;width:160px;">Cryptocurrency</td><td style="color:#333;font-weight:600;">{{ pm.coin_type }}</td></tr>
+          <tr><td style="color:#777;">Wallet Address</td>
+              <td style="color:#333;font-weight:700;font-family:monospace;word-break:break-all;font-size:13px;">{{ pm.wallet_address }}</td></tr>
+          <tr style="background:#e8f5e9;">
+            <td style="color:#2d5a27;font-weight:700;padding:8px 5px;">Reference</td>
+            <td style="color:#2d5a27;font-weight:700;font-size:15px;padding:8px 5px;">ORD-{{ order.id|stringformat:"05d" }}</td>
+          </tr>
+          <tr><td style="color:#777;">EUR Amount</td><td style="color:#333;font-weight:600;">€{{ order.total_amount }}</td></tr>
+        </table>
+        <p style="margin:14px 0 0;font-size:13px;color:#e65100;line-height:1.5;">
+          ⚠️ Please send the {{ pm.coin_type }} equivalent of <strong>€{{ order.total_amount }}</strong>
+          and include the reference <strong>ORD-{{ order.id|stringformat:"05d" }}</strong> in the transaction memo if possible.
+        </p>
+
+        {% elif pm.payment_method == 'cod' %}
+        <p style="margin:0;font-size:14px;color:#333;line-height:1.7;">{{ pm.delivery_instructions }}</p>
+
+        {% else %}
+        <p style="margin:0;font-size:14px;color:#333;">Payment method: {{ order.payment_method|title }}</p>
+        {% endif %}
+
+        {% endwith %}
+      </td></tr>
+    </table>
+  </td></tr>
+
+  <!-- Proof of payment -->
+  <tr><td style="padding:16px 32px 0;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="background:#fff8e1;border:1px solid #ffe082;border-radius:6px;">
+      <tr><td style="padding:14px 16px;">
+        <p style="margin:0;font-size:13px;color:#5d4037;line-height:1.6;">
+          📧 Once payment is made, please send your payment proof (screenshot or receipt) to:
+          <strong><a href="mailto:{{ admin_email }}" style="color:#2d5a27;">{{ admin_email }}</a></strong>
+        </p>
+        <p style="margin:8px 0 0;font-size:13px;color:#5d4037;">
+          You will receive updates on your order status by email.
+        </p>
+      </td></tr>
+    </table>
+  </td></tr>
+
+  {% if custom_message %}
+  <!-- Custom message from admin -->
+  <tr><td style="padding:16px 32px 0;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="background:#f3f4f6;border-left:4px solid #2d5a27;border-radius:4px;">
+      <tr><td style="padding:14px 16px;">
+        <p style="margin:0 0 6px;font-size:12px;color:#888;text-transform:uppercase;letter-spacing:0.5px;">Message from our team</p>
+        <p style="margin:0;font-size:14px;color:#333;line-height:1.6;">{{ custom_message }}</p>
+      </td></tr>
+    </table>
+  </td></tr>
+  {% endif %}
+
+  <!-- Contact -->
+  <tr><td style="padding:20px 32px 0;">
+    <p style="margin:0;font-size:13px;color:#777;line-height:1.6;">
+      Questions? Contact us at
+      <a href="mailto:{{ site.email }}" style="color:#2d5a27;">{{ site.email }}</a>
+      {% if site.phone %} or call {{ site.phone }}{% endif %}.
+    </p>
+  </td></tr>
+
+  <!-- Footer -->
+  <tr><td style="background:#2d5a27;padding:20px 32px;margin-top:24px;">
+    <p style="margin:0;color:#a8d5a2;font-size:12px;text-align:center;">
+      {{ site.site_name }} &nbsp;|&nbsp; {{ site.address }}
+    </p>
+  </td></tr>
+
+</table>
+</td></tr>
+</table>
+</body>
+</html>

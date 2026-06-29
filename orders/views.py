@@ -1,66 +1,13 @@
-import smtplib
-import ssl
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
-
-from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
-from django.template.loader import render_to_string
 
 from cart.cart import Cart
-from pages.models import SiteSettings
+from .email_utils import send_order_received_admin, send_order_received_customer
 from .forms import OrderCreateForm
 from .models import Order, OrderItem
 
-
-# ─── Email helpers ─────────────────────────────────────────────────────────────
-
-def send_email_directly(subject, body, recipient_email, is_html=False):
-    """Send a single email via SMTP_SSL using settings from environment."""
-    try:
-        message = MIMEMultipart("alternative")
-        message["Subject"] = subject
-        message["From"] = settings.SMTP_EMAIL
-        message["To"] = recipient_email
-        message.attach(MIMEText(body, "html" if is_html else "plain"))
-
-        context = ssl.create_default_context()
-        with smtplib.SMTP_SSL(settings.SMTP_HOST, settings.SMTP_PORT, context=context) as server:
-            server.login(settings.SMTP_EMAIL, settings.SMTP_PASSWORD)
-            server.sendmail(settings.SMTP_EMAIL, recipient_email, message.as_string())
-        return True
-    except Exception as e:
-        print(f"Email error to {recipient_email}: {e}")
-        return False
-
-
-def send_admin_order_email(order, cleaned_data):
-    """Notify admin of a new order."""
-    subject = f'New Order #{order.id} — {order.total_amount}€'
-    body = render_to_string('emails/admin_order_notification.html', {
-        'order': order,
-        'cleaned_data': cleaned_data,
-        'payment_method': cleaned_data.get('payment_method', 'N/A'),
-    })
-    return send_email_directly(subject, body, settings.ADMIN_EMAIL, is_html=True)
-
-
-def send_customer_order_confirmation(order, payment_method):
-    """Send order confirmation to the customer. Includes bank details if payment is bank_transfer."""
-    site_settings = SiteSettings.get_settings()
-    subject = f'Order Confirmation #{order.id} — {site_settings.site_name}'
-    body = render_to_string('emails/customer_order_confirmation.html', {
-        'order': order,
-        'payment_method': payment_method,
-        'site_settings': site_settings,
-    })
-    return send_email_directly(subject, body, order.email, is_html=True)
-
-
-# ─── Views ─────────────────────────────────────────────────────────────────────
 
 def order_create(request):
     """Checkout: validate stock, create order, send emails."""
@@ -100,17 +47,15 @@ def order_create(request):
                     price=item['price'],
                     quantity=item['quantity'],
                 )
-                # Decrement stock
                 item['product'].stock_quantity -= item['quantity']
                 item['product'].save(update_fields=['stock_quantity'])
 
             cart.clear()
             messages.success(request, f'Order #{order.id} placed successfully!')
 
-            # ── Emails ────────────────────────────────────────────────────────
-            payment_method = form.cleaned_data.get('payment_method')
-            send_customer_order_confirmation(order, payment_method)
-            send_admin_order_email(order, form.cleaned_data)
+            # ── Emails (Email 1 + Email 2) ───────────────────────────────────
+            send_order_received_customer(order)
+            send_order_received_admin(order)
 
             return redirect('orders:order_created', order_id=order.id)
 

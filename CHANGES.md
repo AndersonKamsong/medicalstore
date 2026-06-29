@@ -842,3 +842,132 @@ python manage.py populate_db
 | `digestive-health` | Digestive Health | Medical |
 | `immune-support` | Immune Support | Medical |
 | `respiratory-care` | Respiratory Care | Medical |
+
+---
+
+## Phase 9 — Order Email Notification System
+
+**Date:** 2026-06-29
+
+### Bug Fixes
+
+**Bug 1 — `OrderItemInline.line_total` crash (`TypeError: NoneType * int`)**
+- File: `orders/admin.py`
+- Fix: added `if obj.price is None or obj.quantity is None: return '€0.00'` guard before the multiplication.
+
+**Bug 2 — `CloudinaryImageWidget.render()` missing `renderer` argument**
+- File: `products/widgets.py`
+- Fix (applied in Phase 7): signature changed to `def render(self, name, value, attrs=None, renderer=None)` and `super().render()` call updated to pass `renderer=renderer`.
+
+### New Files
+
+| File | Purpose |
+|---|---|
+| `orders/email_utils.py` | 4 email utility functions |
+| `templates/emails/order_received_customer.html` | Email 1 template |
+| `templates/emails/order_received_admin.html` | Email 2 template |
+| `templates/emails/payment_details.html` | Email 3 template |
+| `templates/emails/order_status_update.html` | Email 4 template |
+| `templates/admin/orders/send_payment_details.html` | Admin payment form page |
+
+### Model Changes
+
+**`orders/migrations/0002_order_notes_alter_order_status.py`**
+- Added `notes = models.TextField(blank=True, default='')` to `Order`
+- Added `'confirmed'` to `Order.STATUS_CHOICES` (between `pending` and `processing`)
+
+### Email 1 — Customer Order Received (`send_order_received_customer`)
+- Trigger: immediately when `order_create` view saves the order
+- To: `order.email`
+- Subject: `Order Received – ORD-{id:05d} | {site_name}`
+- Content: greeting, order number, date, address, itemised table with unit price + line total, order total, payment method, note that payment details will follow
+
+### Email 2 — Admin New Order Alert (`send_order_received_admin`)
+- Trigger: same moment as Email 1
+- To: `ADMIN_EMAIL` from settings
+- Subject: `NEW ORDER – ORD-{id:05d} from {first} {last}`
+- Content: full customer details, itemised table, "View Order in Admin" link, action prompt to send payment details
+
+### Email 3 — Payment Details (`send_payment_details`)
+- Trigger: **manual** — admin fills form at `/admin/orders/order/send-payment-details/`
+- To: `order.email`
+- Subject: `Payment Details – ORD-{id:05d} | {site_name}`
+- Content varies by payment method:
+  - **Bank Transfer**: bank_name, account_name, IBAN, BIC/SWIFT, reference (ORD-{id:05d})
+  - **Crypto**: coin type, wallet address, EUR amount, reference
+  - **Cash on Delivery**: custom delivery instructions text
+- After send: order status auto-set to `confirmed`, timestamp logged to `order.notes`
+
+### Email 4 — Status Update (`send_status_update_email`)
+- Trigger: 
+  1. Admin saves an order with a changed `status` field (`save_model` override)
+  2. Admin uses any bulk status action (mark_confirmed, mark_shipped, etc.)
+- To: `order.email`
+- Subject: `Order Update – ORD-{id:05d} is now {status} | {site_name}`
+- Status messages:
+  - `confirmed` → "Your order has been confirmed and is being prepared."
+  - `processing` → "Your order is currently being processed."
+  - `shipped` → "Great news! Your order has been shipped and is on its way." (+ notes field shown as tracking info)
+  - `delivered` → "Your order has been delivered. Thank you for your purchase!"
+  - `cancelled` → "Unfortunately your order has been cancelled..."
+- No email sent for `pending` status
+
+### Admin: Send Payment Details Page
+
+URL: `/admin/orders/order/send-payment-details/?ids=1,2,3`
+
+Access via:
+1. Order list → Actions dropdown → "Send payment details to customer(s)" → select orders → Go
+2. Per-row "💳 Pay" button in the order list (single order shortcut)
+
+Form fields:
+- Payment method selector (Bank Transfer / Crypto / Cash on Delivery)
+- Bank fields (pre-filled from SiteSettings)
+- Crypto fields (coin type + wallet address)
+- COD instructions text area
+- Optional custom message
+- Live email preview (JavaScript-rendered)
+- Submit → sends email, marks order `confirmed`, logs to `order.notes`
+
+### Admin Enhancements
+
+- `notes` field shown in Order change page under "Notes & Tracking" fieldset
+- Status changes (both manual save and bulk actions) auto-append a timestamped entry to `order.notes`
+- All 6 bulk actions now send Email 4 automatically: mark_confirmed, mark_processing, mark_shipped, mark_delivered, mark_cancelled
+- `_STATUS_COLORS` updated to include `confirmed` (#2E7D32)
+
+### How to Test Locally
+
+**Set console email backend in `.env`:**
+```
+EMAIL_BACKEND=django.core.mail.backends.console.EmailBackend
+```
+
+**Test Email 1 + 2:** Place an order on the site → check terminal for two email outputs.
+
+**Test Email 3:**
+```
+Admin → Orders → select any order → Actions: "Send payment details" → fill form → Submit
+```
+Check terminal for the payment details email.
+
+**Test Email 4:**
+```
+Admin → Orders → select order → Actions: "Mark selected as Shipped"
+```
+Check terminal for status update email.
+
+Or open an order in admin, change its Status field to `shipped`, and Save.
+
+**Test all email functions directly:**
+```bash
+python manage.py shell -c "
+from orders.email_utils import *
+from orders.models import Order
+o = Order.objects.first()
+send_order_received_customer(o)
+send_order_received_admin(o)
+o.status = 'shipped'
+send_status_update_email(o)
+"
+```

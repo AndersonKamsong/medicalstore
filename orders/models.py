@@ -6,6 +6,7 @@ from products.models import Product
 class Order(models.Model):
     STATUS_CHOICES = [
         ('pending', 'Pending'),
+        ('confirmed', 'Confirmed'),
         ('processing', 'Processing'),
         ('shipped', 'Shipped'),
         ('delivered', 'Delivered'),
@@ -30,6 +31,8 @@ class Order(models.Model):
     # Payment fields (placeholder for future payment integration)
     payment_method = models.CharField(max_length=50, default='card')
     payment_status = models.CharField(max_length=20, default='pending')
+
+    notes = models.TextField(blank=True, default='', help_text='Internal notes and status change log')
     
     class Meta:
         ordering = ['-created']

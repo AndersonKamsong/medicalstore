@@ -1,0 +1,248 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block title %}Send Payment Details{% endblock %}
+
+{% block extrahead %}
+{{ block.super }}
+<style>
+  .spd-wrap { max-width: 900px; }
+  .spd-orders { background: #f8fdf7; border: 1px solid #c8e6c9; border-radius: 6px; margin-bottom: 20px; }
+  .spd-orders table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .spd-orders th { background: #e8f5e9; padding: 8px 12px; text-align: left; color: #2d5a27; border-bottom: 1px solid #c8e6c9; }
+  .spd-orders td { padding: 8px 12px; border-bottom: 1px solid #e8f5e9; color: #333; }
+  .spd-section { background: #fff; border: 1px solid #ddd; border-radius: 6px; padding: 20px; margin-bottom: 16px; }
+  .spd-section h3 { margin: 0 0 14px; font-size: 14px; color: #2d5a27; border-bottom: 1px solid #e8f5e9; padding-bottom: 8px; }
+  .spd-payment-panel { display: none; }
+  .spd-payment-panel.active { display: block; }
+  .spd-field { margin-bottom: 14px; }
+  .spd-field label { display: block; font-size: 13px; font-weight: 600; color: #444; margin-bottom: 4px; }
+  .spd-field input, .spd-field textarea, .spd-field select {
+    width: 100%; box-sizing: border-box; padding: 8px 10px; border: 1px solid #ccc;
+    border-radius: 4px; font-size: 13px; font-family: inherit;
+  }
+  .spd-field textarea { height: 90px; resize: vertical; }
+  .spd-readonly { background: #f5f5f5; border: 1px solid #ddd; border-radius: 4px; padding: 8px 10px; font-size: 13px; color: #555; }
+  .spd-method-btn { display: inline-block; padding: 7px 16px; margin-right: 8px; margin-bottom: 8px;
+    border: 2px solid #ccc; border-radius: 4px; cursor: pointer; font-size: 13px; background: #fff; color: #555; }
+  .spd-method-btn.selected { border-color: #2d5a27; background: #e8f5e9; color: #2d5a27; font-weight: 700; }
+  .spd-preview { background: #f9f9f9; border: 1px dashed #ccc; border-radius: 6px; padding: 16px;
+    font-size: 13px; color: #333; line-height: 1.6; max-height: 260px; overflow-y: auto; }
+  .preview-label { font-size: 11px; color: #999; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+  .btn-send { background: #2d5a27; color: #fff; border: none; padding: 11px 28px; font-size: 14px;
+    font-weight: 700; border-radius: 4px; cursor: pointer; }
+  .btn-send:hover { background: #1a3a1a; }
+  .btn-cancel { background: #f5f5f5; color: #333; border: 1px solid #ccc; padding: 11px 20px;
+    font-size: 13px; border-radius: 4px; text-decoration: none; margin-left: 10px; }
+  .warning-badge { background: #fff3e0; border: 1px solid #ffe082; border-radius: 4px;
+    padding: 8px 12px; font-size: 13px; color: #5d4037; margin-bottom: 16px; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+</style>
+{% endblock %}
+
+{% block content_title %}<h1>💳 Send Payment Details</h1>{% endblock %}
+
+{% block content %}
+<div class="spd-wrap">
+
+  {% if messages %}
+  {% for msg in messages %}
+  <div class="messagelist"><li class="{{ msg.tags }}">{{ msg }}</li></div>
+  {% endfor %}
+  {% endif %}
+
+  <!-- Selected orders -->
+  <div class="spd-section">
+    <h3>Selected Order{{ orders|length|pluralize }}</h3>
+    <div class="spd-orders">
+      <table>
+        <thead>
+          <tr><th>Order #</th><th>Customer</th><th>Email</th><th>Payment Method</th><th>Total</th></tr>
+        </thead>
+        <tbody>
+          {% for order in orders %}
+          <tr>
+            <td><strong>ORD-{{ order.id|stringformat:"05d" }}</strong></td>
+            <td>{{ order.first_name }} {{ order.last_name }}</td>
+            <td><a href="mailto:{{ order.email }}">{{ order.email }}</a></td>
+            <td>{{ order.payment_method|title }}</td>
+            <td><strong>€{{ order.total_amount }}</strong></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <form method="post" id="spd-form">
+    {% csrf_token %}
+    <input type="hidden" name="ids" value="{{ ids }}">
+
+    <!-- Payment method selector -->
+    <div class="spd-section">
+      <h3>Payment Method</h3>
+      <div id="method-buttons">
+        <button type="button" class="spd-method-btn {% if default_method == 'bank_transfer' %}selected{% endif %}"
+          data-method="bank_transfer" onclick="selectMethod('bank_transfer')">🏦 Bank Transfer</button>
+        <button type="button" class="spd-method-btn {% if default_method == 'crypto' %}selected{% endif %}"
+          data-method="crypto" onclick="selectMethod('crypto')">₿ Crypto</button>
+        <button type="button" class="spd-method-btn {% if default_method == 'cod' %}selected{% endif %}"
+          data-method="cod" onclick="selectMethod('cod')">🚚 Cash on Delivery</button>
+      </div>
+      <input type="hidden" name="payment_method" id="payment_method_input" value="{{ default_method }}">
+    </div>
+
+    <!-- Bank Transfer fields -->
+    <div class="spd-payment-panel {% if default_method == 'bank_transfer' %}active{% endif %}" id="panel-bank_transfer">
+      <div class="spd-section">
+        <h3>🏦 Bank Transfer Details</h3>
+        <div class="grid2">
+          <div class="spd-field">
+            <label>Bank Name</label>
+            <input type="text" name="bank_name" value="{{ site.bank_name }}" oninput="updatePreview()">
+          </div>
+          <div class="spd-field">
+            <label>Account Holder Name</label>
+            <input type="text" name="bank_account_name" value="{{ site.bank_account_name }}" oninput="updatePreview()">
+          </div>
+          <div class="spd-field">
+            <label>IBAN</label>
+            <input type="text" name="bank_iban" value="{{ site.bank_iban }}" oninput="updatePreview()">
+          </div>
+          <div class="spd-field">
+            <label>BIC / SWIFT</label>
+            <input type="text" name="bank_swift_bic" value="{{ site.bank_swift_bic }}" oninput="updatePreview()">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Crypto fields -->
+    <div class="spd-payment-panel {% if default_method == 'crypto' %}active{% endif %}" id="panel-crypto">
+      <div class="spd-section">
+        <h3>₿ Crypto Payment Details</h3>
+        <div class="grid2">
+          <div class="spd-field">
+            <label>Cryptocurrency</label>
+            <select name="coin_type" oninput="updatePreview()">
+              <option value="BTC">Bitcoin (BTC)</option>
+              <option value="ETH">Ethereum (ETH)</option>
+              <option value="USDT">Tether (USDT)</option>
+              <option value="LTC">Litecoin (LTC)</option>
+              <option value="XMR">Monero (XMR)</option>
+            </select>
+          </div>
+        </div>
+        <div class="spd-field">
+          <label>Wallet Address</label>
+          <input type="text" name="wallet_address" placeholder="e.g. 1A2b3C..." oninput="updatePreview()">
+        </div>
+      </div>
+    </div>
+
+    <!-- Cash on Delivery fields -->
+    <div class="spd-payment-panel {% if default_method == 'cod' %}active{% endif %}" id="panel-cod">
+      <div class="spd-section">
+        <h3>🚚 Cash on Delivery Instructions</h3>
+        <div class="spd-field">
+          <label>Delivery Instructions</label>
+          <textarea name="delivery_instructions" oninput="updatePreview()"
+            placeholder="e.g. Payment is collected upon delivery. Please have the exact amount ready..."></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- Custom message -->
+    <div class="spd-section">
+      <h3>Optional Message to Customer</h3>
+      <div class="spd-field">
+        <label>Additional note (leave blank to omit)</label>
+        <textarea name="custom_message" oninput="updatePreview()"
+          placeholder="e.g. Please note that delivery may take 3-5 business days..."></textarea>
+      </div>
+    </div>
+
+    <!-- Live preview -->
+    <div class="spd-section">
+      <h3>📧 Email Preview</h3>
+      <div class="preview-label">This is what the customer will receive</div>
+      <div class="spd-preview" id="email-preview">Loading preview…</div>
+    </div>
+
+    <!-- Actions -->
+    <div style="margin-top:10px;padding-bottom:30px;">
+      <button type="submit" class="btn-send">📤 Send Payment Details</button>
+      <a href="{% url 'admin:orders_order_changelist' %}" class="btn-cancel">Cancel</a>
+    </div>
+
+  </form>
+</div>
+
+<script>
+function selectMethod(method) {
+  document.getElementById('payment_method_input').value = method;
+  document.querySelectorAll('.spd-method-btn').forEach(btn => {
+    btn.classList.toggle('selected', btn.dataset.method === method);
+  });
+  document.querySelectorAll('.spd-payment-panel').forEach(panel => {
+    panel.classList.remove('active');
+  });
+  const panel = document.getElementById('panel-' + method);
+  if (panel) panel.classList.add('active');
+  updatePreview();
+}
+
+function getVal(name) {
+  const el = document.querySelector('[name="' + name + '"]');
+  return el ? el.value.trim() : '';
+}
+
+function updatePreview() {
+  const method = getVal('payment_method');
+  const customMsg = getVal('custom_message');
+  const orders = {{ preview_orders_json|safe }};
+  let lines = [];
+
+  orders.forEach(function(o) {
+    lines.push('──────────────────────────────────────');
+    lines.push('To: ' + o.email);
+    lines.push('Subject: Payment Details – ORD-' + o.id_padded + ' | {{ site.site_name }}');
+    lines.push('');
+    lines.push('Dear ' + o.first_name + ',');
+    lines.push('');
+    lines.push('Order ORD-' + o.id_padded + ' | Total: €' + o.total);
+    lines.push('');
+
+    if (method === 'bank_transfer') {
+      lines.push('Payment Method: Bank Transfer');
+      lines.push('Bank: ' + (getVal('bank_name') || '[bank_name]'));
+      lines.push('Account Name: ' + (getVal('bank_account_name') || '[account_name]'));
+      lines.push('IBAN: ' + (getVal('bank_iban') || '[IBAN]'));
+      lines.push('BIC/SWIFT: ' + (getVal('bank_swift_bic') || '[BIC]'));
+      lines.push('Reference: ORD-' + o.id_padded + '  ← Include in your transfer!');
+      lines.push('Amount: €' + o.total);
+    } else if (method === 'crypto') {
+      lines.push('Payment Method: Crypto');
+      lines.push('Coin: ' + (getVal('coin_type') || 'BTC'));
+      lines.push('Wallet: ' + (getVal('wallet_address') || '[wallet_address]'));
+      lines.push('Amount: €' + o.total + ' equivalent');
+    } else if (method === 'cod') {
+      lines.push('Payment Method: Cash on Delivery');
+      lines.push(getVal('delivery_instructions') || '[delivery instructions]');
+    }
+
+    lines.push('');
+    lines.push('Send payment proof to: {{ admin_email }}');
+    if (customMsg) { lines.push(''); lines.push('Note: ' + customMsg); }
+    lines.push('');
+  });
+
+  document.getElementById('email-preview').innerText = lines.join('\n');
+}
+
+// Initialise
+document.addEventListener('DOMContentLoaded', function() {
+  updatePreview();
+});
+</script>
+{% endblock %}
