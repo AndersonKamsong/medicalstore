@@ -2,7 +2,7 @@ services:
   - type: web
     name: medicalstore
     env: python
-    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput && python manage.py migrate
+    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput && python manage.py migrate && python manage.py populate_db
     startCommand: gunicorn medicalstore.wsgi:application --bind 0.0.0.0:$PORT
     envVars:
       - key: DEBUG

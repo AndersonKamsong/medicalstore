@@ -71,6 +71,8 @@ class Category(models.Model):
     )
 
     # Misc
+    image = models.ImageField(upload_to='categories/', blank=True, null=True)
+
     icon = models.CharField(
         max_length=50,
         blank=True,

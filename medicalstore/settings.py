@@ -121,29 +121,40 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-# Use compressed+hashed filenames in production; plain storage in dev
-STATICFILES_STORAGE = (
-    'whitenoise.storage.CompressedManifestStaticFilesStorage'
-    if not DEBUG
-    else 'django.contrib.staticfiles.storage.StaticFilesStorage'
-)
-
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 # ─── Cloudinary (image storage) ────────────────────────────────────────────────
+# Django 5.0 removed DEFAULT_FILE_STORAGE and STATICFILES_STORAGE.
+# Both must be configured via the STORAGES dict.
 CLOUDINARY_STORAGE = {
     'CLOUD_NAME': config('CLOUDINARY_CLOUD_NAME', default=''),
     'API_KEY': config('CLOUDINARY_API_KEY', default=''),
     'API_SECRET': config('CLOUDINARY_API_SECRET', default=''),
 }
 
-if all([
+_cloudinary_active = all([
     config('CLOUDINARY_CLOUD_NAME', default=''),
     config('CLOUDINARY_API_KEY', default=''),
     config('CLOUDINARY_API_SECRET', default=''),
-]):
-    DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+])
+
+STORAGES = {
+    'default': {
+        'BACKEND': (
+            'cloudinary_storage.storage.MediaCloudinaryStorage'
+            if _cloudinary_active
+            else 'django.core.files.storage.FileSystemStorage'
+        ),
+    },
+    'staticfiles': {
+        'BACKEND': (
+            'whitenoise.storage.CompressedManifestStaticFilesStorage'
+            if not DEBUG
+            else 'django.contrib.staticfiles.storage.StaticFilesStorage'
+        ),
+    },
+}
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 

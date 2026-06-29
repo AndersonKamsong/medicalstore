@@ -6,18 +6,13 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from django.conf.urls.i18n import i18n_patterns
+from medicalstore.admin_site import admin_site
 
 urlpatterns = [
     path('i18n/', include('django.conf.urls.i18n')),
 ]
-# from pages.views import change_language
-
-# urlpatterns = [
-#     # ... your other URLs ...
-#     path('i18n/setlang/', change_language, name='change_language'),
-# ]
 urlpatterns += i18n_patterns(
-    path('admin/', admin.site.urls),
+    path('admin/', admin_site.urls),
     path('', include('pages.urls')),
     path('products/', include('products.urls')),
     path('cart/', include('cart.urls')),

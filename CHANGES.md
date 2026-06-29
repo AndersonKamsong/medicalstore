@@ -639,3 +639,206 @@ python manage.py runserver
 #    Visit: http://localhost:8000/accounts/profile/
 #    (Redirects to login if not authenticated)
 ```
+
+---
+
+## Phase 7 — Custom Django Admin
+
+**Date:** 2026-06-29
+
+### Files Changed
+
+| File | Action |
+|---|---|
+| `products/models.py` | Added `Category.image` field |
+| `products/migrations/0010_add_category_image.py` | **Created** (auto) |
+| `products/widgets.py` | **Created** — CloudinaryImageWidget |
+| `products/admin.py` | Full rewrite — CategoryAdmin + ProductAdmin + StockStatusFilter |
+| `orders/admin.py` | Full rewrite — OrderAdmin + OrderItemInline + CSV export |
+| `accounts/admin.py` | Full rewrite — CustomUserAdmin (extends BaseUserAdmin) |
+| `pages/admin.py` | Full rewrite — enhanced SiteSettingsAdmin |
+| `medicalstore/admin_site.py` | **Created** — MedicalStoreAdminSite with stats dashboard |
+| `medicalstore/urls.py` | Updated to use `admin_site.urls` |
+| `medicalstore/settings.py` | Replaced `STATICFILES_STORAGE`+`DEFAULT_FILE_STORAGE` with `STORAGES` dict (Django 5.0 requirement) |
+| `templates/admin/base_site.html` | **Created** — cannabis-green branding |
+| `templates/admin/index.html` | **Created** — full stats dashboard |
+
+### Critical Fix: Django 5.0 Storage Config
+
+`DEFAULT_FILE_STORAGE` and `STATICFILES_STORAGE` were removed in Django 5.0.
+Both must now be set via the `STORAGES` dict:
+
+```python
+STORAGES = {
+    'default': {
+        'BACKEND': 'cloudinary_storage.storage.MediaCloudinaryStorage'  # or FileSystemStorage
+    },
+    'staticfiles': {
+        'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage'  # or StaticFilesStorage
+    },
+}
+```
+
+Setting `DEFAULT_FILE_STORAGE` in Django 5.x is silently ignored — images would
+upload to local filesystem even when Cloudinary keys are present.
+
+### Cloudinary Widget (`products/widgets.py`)
+
+`CloudinaryImageWidget(ClearableFileInput)` shows:
+- 150×150 thumbnail of current image
+- Green "On Cloudinary" badge when URL contains `cloudinary.com`
+- Orange "Stored locally" badge otherwise
+- Clickable URL link
+- Standard file input for new uploads
+
+Used in both `CategoryAdmin` and `ProductAdmin` via `formfield_overrides = {ImageField: {'widget': CloudinaryImageWidget}}`.
+
+### Custom AdminSite (`medicalstore/admin_site.py`)
+
+`MedicalStoreAdminSite(AdminSite)` overrides `index()` to inject:
+
+| Context variable | Content |
+|---|---|
+| `stat_total_products` / `stat_active_products` / `stat_inactive_products` | Product counts |
+| `stat_total_categories` | Category count |
+| `stat_total_orders` / `stat_pending_orders` | Order counts |
+| `stat_revenue` | Sum of delivered order totals |
+| `stat_low_stock` / `stat_out_of_stock` | Stock level counts |
+| `stat_registered_users` | User count |
+| `recent_orders` | Last 10 orders |
+| `low_stock_products` | 10 products with lowest stock |
+
+All models registered with `@admin.register(Model, site=admin_site)` (not `@admin.register(Model)`) so they appear in the custom site only.
+
+### Admin Features Summary
+
+**Products:**
+- `StockStatusFilter` — sidebar filter with Out/Low/In Stock options; dashboard cards link to `?stock_status=out` and `?stock_status=low`
+- `stock_badge` — colored pill badge per stock level
+- `image_preview` — 50×50 thumbnail with Cloudinary/Local badge
+- 4 bulk actions: mark_active, mark_inactive, mark_featured, unmark_featured
+
+**Orders:**
+- `order_number` — `ORD-00001` format
+- `status_badge` — colored pill per status
+- `OrderItemInline` — shows line_total (price × quantity) as readonly
+- CSV export action — downloads all selected orders as `.csv`
+- Status bulk actions: mark_processing, mark_shipped, mark_delivered, mark_cancelled
+
+**Users:**
+- Extends Django's `BaseUserAdmin`
+- `order_count` — clickable link to that user's orders
+- `Group` registered so group management is available
+
+### How to Test Cloudinary Upload from Admin
+
+1. Put real Cloudinary credentials in `.env` (get from cloudinary.com → Dashboard)
+2. Start server: `python manage.py runserver`
+3. Go to `/admin/products/product/add/`
+4. Upload an image and save
+5. Verify in shell:
+```bash
+python manage.py shell -c "
+from products.models import Product
+p = Product.objects.last()
+print(p.image.url)
+# Must contain: cloudinary.com
+"
+```
+6. The stored URL will be `https://res.cloudinary.com/<your-cloud>/image/upload/.../products/<filename>`
+
+### Credentials Needed (all marked sync: false in render.yaml)
+
+| Variable | Where to get it |
+|---|---|
+| `CLOUDINARY_CLOUD_NAME` | cloudinary.com → Dashboard → Cloud Name |
+| `CLOUDINARY_API_KEY` | cloudinary.com → Dashboard → API Key |
+| `CLOUDINARY_API_SECRET` | cloudinary.com → Dashboard → API Secret |
+
+---
+
+## Phase 8 — populate_db Management Command
+
+**Date:** 2026-06-29
+
+### Summary
+
+Created idempotent seed commands based on the real data extracted from `db.sqlite3`.
+Running `populate_db` twice produces **0 new records** on the second run.
+
+**Counts seeded:**
+- 20 categories (15 cannabis + 5 medical/pharmaceutical)
+- 17 products (7 cannabis + 10 medical)
+- 1 SiteSettings record
+
+### Files Changed
+
+| File | Action |
+|---|---|
+| `products/management/commands/populate_db.py` | Full rewrite — all real data, idempotent |
+| `products/management/commands/clear_db.py` | **Created** — utility to wipe products/categories |
+| `render.yaml` | `buildCommand` updated to run `populate_db` after `migrate` |
+
+### populate_db (`python manage.py populate_db`)
+
+- Uses `update_or_create(slug=slug, defaults={...})` for both categories and products
+- Sets all translated fields (`name_en`, `name_fr`, `description_en`, `description_fr`, etc.)
+- Skips image fields — images must be uploaded manually via `/admin/` to Cloudinary
+- Truncates `meta_description` fields to 160 chars (PostgreSQL `character varying(160)` limit)
+- Prints per-record status: `Created: <name>` or `Skipped existing: <name>`
+- Final line always: `Database populated successfully.`
+
+**Running locally:**
+```bash
+python manage.py populate_db
+```
+
+**Running on a fresh deploy:**
+`render.yaml buildCommand` now runs it automatically after every `migrate`:
+```
+... && python manage.py migrate && python manage.py populate_db
+```
+Since it uses `update_or_create`, re-running on deploy only updates changed records and
+skips everything that already exists — no duplicates possible.
+
+### clear_db (`python manage.py clear_db`)
+
+Utility command for local development. Deletes all Products, Categories, and SiteSettings.
+Does **not** delete users or orders.
+
+```bash
+python manage.py clear_db
+# → "This will delete 17 product(s), 20 category/ies, and 1 SiteSettings record(s)."
+# → "Type YES to confirm: "
+```
+
+Useful workflow for a clean re-seed:
+```bash
+python manage.py clear_db   # type YES
+python manage.py populate_db
+```
+
+### Category slugs seeded
+
+| Slug | Name (EN) | Type |
+|---|---|---|
+| `thc-flower` | THC Flower | Cannabis |
+| `cbd-flower` | CBD Flower | Cannabis |
+| `backpack-boyz` | Backpack Boyz | Cannabis brand |
+| `doja-exclusive` | Doja Exclusive | Cannabis brand |
+| `jungle-boys` | Jungle Boys | Cannabis brand |
+| `the-ten-co` | The TEN Co | Cannabis brand |
+| `wizard-trees` | Wizard Trees | Cannabis brand |
+| `cookies-strains` | Cookies Strains | Cannabis brand |
+| `hash` | Hash | Cannabis concentrate |
+| `thc-diamond` | THC Diamonds | Cannabis concentrate |
+| `thc-candy` | THC Candy | Cannabis edible |
+| `thc-oil` | THC Oil | Cannabis oil |
+| `cbd-oil` | CBD Oil | CBD |
+| `cannabis-tincture` | Cannabis Tincture | CBD |
+| `magic-mushrooms` | Magic Mushrooms | Other |
+| `pain-relief` | Pain Relief | Medical |
+| `cardiovascular-health` | Cardiovascular Health | Medical |
+| `digestive-health` | Digestive Health | Medical |
+| `immune-support` | Immune Support | Medical |
+| `respiratory-care` | Respiratory Care | Medical |
